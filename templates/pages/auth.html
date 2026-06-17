@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% set title = 'Вход в систему' %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-hero">
+        <div class="auth-mark">✳</div>
+        <h1>ЛИС «Картотека»</h1>
+        <p>Доступ к лабораторной информационной системе бактериологической лаборатории КГБУЗ ККПТД № 1 разрешен только авторизованным сотрудникам.</p>
+    </div>
+
+    <div class="auth-choice-grid">
+        <article class="auth-choice-card">
+            <h2>Вход</h2>
+            <p>Используйте учетную запись сотрудника лаборатории.</p>
+            <button class="button primary" type="button" data-open-modal="loginModal">Войти в систему</button>
+        </article>
+        <article class="auth-choice-card">
+            <h2>Регистрация</h2>
+            <p>Создайте учетную запись. </p>
+            <button class="button" type="button" data-open-modal="registerModal">Зарегистрироваться</button>
+        </article>
+    </div>
+</section>
+{% endblock %}

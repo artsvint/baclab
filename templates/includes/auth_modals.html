@@ -1,0 +1,55 @@
+<div class="modal" id="loginModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+        <div class="modal-head">
+            <h2>Вход в систему</h2>
+            <button class="icon-button" type="button" data-close-modal>×</button>
+        </div>
+        <form action="{{ url_for('auth.login') }}" method="post" class="form-grid single">
+            <input type="hidden" name="next" value="{{ next_url if next_url is defined else (request.args.get('next') or url_for('main.index')) }}">
+            <label>
+                <span>Логин</span>
+                <input name="username" required autocomplete="username">
+            </label>
+            <label>
+                <span>Пароль</span>
+                <input type="password" name="password" required autocomplete="current-password">
+            </label>
+            <div class="form-actions right">
+                <button class="button primary" type="submit">Войти</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="registerModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+        <div class="modal-head">
+            <h2>Регистрация</h2>
+            <button class="icon-button" type="button" data-close-modal>×</button>
+        </div>
+        <form action="{{ url_for('auth.register') }}" method="post" class="form-grid single">
+            <label>
+                <span>ФИО сотрудника</span>
+                <input name="full_name" required>
+            </label>
+            <label>
+                <span>Логин</span>
+                <input name="username" required autocomplete="username">
+            </label>
+            <label>
+                <span>Пароль</span>
+                <input type="password" name="password" required autocomplete="new-password">
+            </label>
+            <label>
+                <span>Повтор пароля</span>
+                <input type="password" name="password_repeat" required autocomplete="new-password">
+            </label>
+            <p class="hint"></p>
+            <div class="form-actions right">
+                <button class="button primary" type="submit">Создать учетную запись</button>
+            </div>
+        </form>
+    </div>
+</div>

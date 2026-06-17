@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% set title = 'Пациент' %}
+
+{% block content %}
+<section class="form-card">
+    <div class="form-title-row">
+        <div>
+            <h1>{% if mode == 'add' %}Добавление нового пациента{% else %}Изменение пациента{% endif %}</h1>
+            <p>Заполните персональные данные и сведения диспансерного учета.</p>
+        </div>
+        <a class="button ghost" href="{{ url_for('main.index', patient_id=patient.PATIENT_ID) if patient and patient.PATIENT_ID else url_for('main.index') }}">← Вернуться</a>
+    </div>
+
+    <form method="post" class="form-grid patient-form"
+          action="{% if mode == 'add' %}{{ url_for('patients.add_patient') }}{% else %}{{ url_for('patients.edit_patient', patient_id=patient.PATIENT_ID) }}{% endif %}">
+
+        <label>
+            <span>Фамилия</span>
+            <input name="PATIENT_LN" value="{{ patient.PATIENT_LN if patient else '' }}" required>
+        </label>
+
+        <label>
+            <span>Имя</span>
+            <input name="PATIENT_FN" value="{{ patient.PATIENT_FN if patient else '' }}" required>
+        </label>
+
+        <label>
+            <span>Отчество</span>
+            <input name="PATIENT_SN" value="{{ patient.PATIENT_SN if patient and patient.PATIENT_SN else '' }}">
+        </label>
+
+        <label>
+            <span>Дата рождения</span>
+            <input type="date" name="BIRTHDATE" value="{{ patient.BIRTHDATE if patient and patient.BIRTHDATE else '' }}">
+        </label>
+
+        <label>
+            <span>СНИЛС</span>
+            <input name="SNILS" value="{{ patient.SNILS if patient and patient.SNILS else '' }}" placeholder="Н/Д">
+        </label>
+
+        <label class="checkbox-line">
+            <input type="checkbox" name="PATIENT_VV" {% if patient and patient.PATIENT_VV %}checked{% endif %}>
+            <span>Впервые выявлен</span>
+        </label>
+
+        <label>
+            <span>Дата взятия на учет</span>
+            <input type="date" name="ACCOUNTING_DAY" value="{{ patient.ACCOUNTING_DAY if patient and patient.ACCOUNTING_DAY else '' }}">
+        </label>
+
+        <label>
+            <span>Лек. устойчивость</span>
+            {% set selected_mdr = patient.MDR|string if patient and patient.MDR is not none else '' %}
+            <select name="MDR">
+                <option value="">Нет</option>
+                {% for item in dictionaries.mdr %}
+                    <option value="{{ item.ID }}" {% if selected_mdr == item.ID|string %}selected{% endif %}>{{ item.TUB_MULTIDRUG_RESISTENCE }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>ГДУ</span>
+            {% set selected_gdu = patient.GDU|string if patient and patient.GDU is not none else '' %}
+            <select name="GDU">
+                <option value="">Нет</option>
+                {% for item in dictionaries.gdu %}
+                    <option value="{{ item.GDU_ID }}" {% if selected_gdu == item.GDU_ID|string %}selected{% endif %}>{{ item.GDU_DESCRIPTION }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="wide-field">
+            <span>Примечания</span>
+            <textarea name="PATIENT_NOTES" rows="6">{{ patient.PATIENT_NOTES if patient and patient.PATIENT_NOTES else '' }}</textarea>
+        </label>
+
+        <div class="form-actions wide-field">
+            <button class="button primary" type="submit">Сохранить</button>
+            <a class="button" href="{{ url_for('main.index', patient_id=patient.PATIENT_ID) if patient and patient.PATIENT_ID else url_for('main.index') }}">Отменить</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

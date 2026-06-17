@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% set title = 'Анализ' %}
+
+{% block content %}
+<section class="form-card test-card">
+    <div class="form-title-row">
+        <div>
+            <h1>{% if mode == 'add' %}Добавление нового анализа{% else %}Изменение анализа{% endif %}</h1>
+            <p>Пациент: {{ patient.PATIENT_LN }} {{ patient.PATIENT_FN }} {{ patient.PATIENT_SN or '' }}</p>
+        </div>
+        <a class="button ghost" href="{{ url_for('main.index', patient_id=patient.PATIENT_ID) }}">← Вернуться</a>
+    </div>
+
+    <form method="post" class="form-grid test-form" data-test-form
+          action="{% if mode == 'add' %}{{ url_for('analysis.add_test', patient_id=patient.PATIENT_ID) }}{% else %}{{ url_for('analysis.edit_test', test_id=test.TEST_ID) }}{% endif %}">
+        <input type="hidden" name="PATIENT_ID" value="{{ patient.PATIENT_ID }}">
+
+        <label>
+            <span>№ анализа</span>
+            <input name="TEST_NUMBER" value="{{ test.TEST_NUMBER if test else '' }}" required>
+        </label>
+
+        <label>
+            <span>Дата посева</span>
+            <input type="date" name="TEST_DATE" value="{{ test.TEST_DATE if test and test.TEST_DATE else '' }}" required>
+        </label>
+
+        <label>
+            <span>Лаборатория</span>
+            {% set selected_lab = test.LAB_ID|string if test and test.LAB_ID is not none else '' %}
+            <select name="LAB_ID">
+                <option value="">Не выбрано</option>
+                {% for item in dictionaries.labs %}
+                    <option value="{{ item.IDMU }}" {% if selected_lab == item.IDMU|string %}selected{% endif %}>{{ item.SH_LNAME }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Учреждение</span>
+            {% set selected_mu = test.MU_ID|string if test and test.MU_ID is not none else '' %}
+            <select name="MU_ID" id="muSelect" data-kkptd-id="13812" data-offices-url-template="{{ url_for('analysis.mu_offices', mu_id=0) }}">
+                <option value="">Не выбрано</option>
+                {% for item in dictionaries.mu %}
+                    <option value="{{ item.IDMU }}" {% if selected_mu == item.IDMU|string %}selected{% endif %}>{{ item.SH_LNAME }}</option>
+                {% endfor %}
+            </select>
+            <small class="field-hint">В списке показаны только учреждения с FLAG_MU = 1.</small>
+        </label>
+
+        <label id="muOfficeField" class="{% if selected_mu != '13812' %}is-hidden{% endif %}">
+            <span>Подразделение ККПТД № 1</span>
+            {% set selected_office = test.MU_OFFICE_ID|string if test and test.MU_OFFICE_ID is not none else '' %}
+            <select name="MU_OFFICE_ID" id="muOfficeSelect" data-selected-value="{{ selected_office }}">
+                <option value="">Выберите подразделение</option>
+                {% for item in dictionaries.mu_offices_kkptd %}
+                    <option value="{{ item.IDMU }}" {% if selected_office == item.IDMU|string %}selected{% endif %}>{{ item.SH_LNAME }}</option>
+                {% endfor %}
+            </select>
+            <small class="field-hint">Заполняется только для материалов из ККПТД № 1.</small>
+        </label>
+
+        <label>
+            <span>Материал получен из</span>
+            {% set selected_origin = test.MATTER_ORIGIN|string if test and test.MATTER_ORIGIN is not none else '' %}
+            <select name="MATTER_ORIGIN">
+                <option value="">Не выбрано</option>
+                {% for item in dictionaries.matter_origin %}
+                    <option value="{{ item.ID }}" {% if selected_origin == item.ID|string %}selected{% endif %}>{{ item.MATTER_ORIGIN }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Материал</span>
+            {% set selected_matter = test.MATTER_ID|string if test and test.MATTER_ID is not none else '' %}
+            <select name="MATTER_ID">
+                <option value="">Не выбрано</option>
+                {% for item in dictionaries.matters %}
+                    <option value="{{ item.ID }}" {% if selected_matter == item.ID|string %}selected{% endif %}>{{ item.MATTER }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Исследование</span>
+            {% set selected_code = test.TEST_CODE|string if test and test.TEST_CODE is not none else '' %}
+            <select name="TEST_CODE" id="testCodeSelect" data-values-url-template="{{ url_for('analysis.test_values', test_code_id=0) }}" required>
+                <option value="">Выберите исследование</option>
+                {% for item in dictionaries.test_codes %}
+                    <option value="{{ item.ID }}" {% if selected_code == item.ID|string %}selected{% endif %}>{{ item.S_CODE }} — {{ item.NAME }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Результат</span>
+            {% set selected_result = test.TEST_RESULT|string if test and test.TEST_RESULT is not none else '' %}
+            <select name="TEST_RESULT" id="testResultSelect" data-selected-value="{{ selected_result }}">
+                <option value="">Не выбрано</option>
+                {% for item in test_values %}
+                    <option value="{{ item.VALUE_ID }}" {% if selected_result == item.VALUE_ID|string %}selected{% endif %}>{{ item.TEST_VALUE }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Скорость роста, дней</span>
+            <input type="number" min="0" name="GROWTH_DAY" value="{{ test.GROWTH_DAY if test and test.GROWTH_DAY is not none else '' }}">
+        </label>
+
+        <label>
+            <span>Рост</span>
+            <input name="GROWTH_RATE" value="{{ test.GROWTH_RATE if test and test.GROWTH_RATE else '' }}" placeholder="например: рост обнаружен">
+        </label>
+
+        <label>
+            <span>Бактериовыделение</span>
+            {% set selected_bact = test.BACT_EXCRETION|string if test and test.BACT_EXCRETION is not none else '' %}
+            <select name="BACT_EXCRETION">
+                <option value="">Не выбрано</option>
+                {% for item in dictionaries.bact_excretion %}
+                    <option value="{{ item.ID }}" {% if selected_bact == item.ID|string %}selected{% endif %}>{{ item.BACT_EXCRETION }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Дата антибиотикограммы</span>
+            <input type="date" name="ABG_DATE" value="{{ test.ABG_DATE if test and test.ABG_DATE else '' }}">
+        </label>
+
+        <label class="wide-field notes-field">
+            <span>Примечания</span>
+            <textarea name="TEST_NOTES" rows="5">{{ test.TEST_NOTES if test and test.TEST_NOTES else '' }}</textarea>
+        </label>
+
+        <div class="wide-field abg-block">
+            <div class="abg-title-row">
+                <h2>Антибиотикограмма</h2>
+                <p>Для каждого антибиотика выберите значение из справочника лекарственной устойчивости.</p>
+            </div>
+
+            <div class="abg-grid">
+                {% for short_name in drug_short_names %}
+                    {% set selected_abg = abg_results.get(short_name).RESISTANCE_ID|string if abg_results.get(short_name) and abg_results.get(short_name).RESISTANCE_ID is not none else '' %}
+                    <label>
+                        <span>{{ short_name }}</span>
+                        <select name="ABG_{{ short_name }}">
+                            <option value=""></option>
+                            {% for value in dictionaries.drug_resistance %}
+                                <option value="{{ value.ID }}" {% if selected_abg == value.ID|string %}selected{% endif %}>{{ value.DRUG_RESISTANCE }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-actions wide-field">
+            <button class="button primary" type="submit">Сохранить</button>
+            <a class="button" href="{{ url_for('main.index', patient_id=patient.PATIENT_ID) }}">Отменить</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% set title = 'Справочники' %}
+
+{% macro render_reference_fields(config, options, row=None) %}
+    {% for field in config['fields'] %}
+        {% set field_name = field['name'] %}
+        {% set value = row[field_name] if row else '' %}
+        <label>
+            <span>{{ field['label'] }}{% if field.get('required') %} *{% endif %}</span>
+            {% if field.get('type') == 'select' %}
+                <select name="{{ field_name }}" {% if field.get('required') %}required{% endif %}>
+                    <option value="">Не выбрано</option>
+                    {% for option in options.get(field_name, []) %}
+                        <option value="{{ option.option_id }}" {% if value|string == option.option_id|string %}selected{% endif %}>{{ option.option_label }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <input name="{{ field_name }}" value="{{ value or '' }}" {% if field.get('required') %}required{% endif %}>
+            {% endif %}
+        </label>
+    {% endfor %}
+{% endmacro %}
+
+{% block content %}
+<section class="form-card reference-page">
+    <div class="form-title-row">
+        <div>
+            <h1>Справочники</h1>
+            <p>Административное редактирование ключевых таблиц базы данных.</p>
+        </div>
+        <a class="button ghost" href="{{ url_for('main.index') }}">← В картотеку</a>
+    </div>
+
+    <div class="reference-toolbar">
+        <label class="reference-select-label">
+            <span>Выберите справочник</span>
+            <select id="referenceTableSelect" data-url="{{ url_for('references.references_page') }}">
+                {% for item in tables %}
+                    <option value="{{ item.key }}" {% if item.key == selected_key %}selected{% endif %}>{{ item.title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        {% if selected_config %}
+            <button class="button primary" type="button" data-open-modal="createReferenceModal">Добавить запись</button>
+        {% endif %}
+    </div>
+
+    {% if selected_config %}
+        <div class="reference-info">
+            <strong>{{ selected_config['title'] }}</strong>
+            <span>Таблица БД: {{ selected_config['table'] }}</span>
+        </div>
+
+        <div class="table-wrap reference-table-wrap">
+            <table class="data-table compact-table reference-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    {% for field in selected_config['fields'] %}
+                        <th>{{ field['label'] }}</th>
+                    {% endfor %}
+                    <th class="actions-col">Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in rows %}
+                    {% set record_id = row[selected_config['pk']] %}
+                    <tr>
+                        <td>{{ record_id }}</td>
+                        {% for field in selected_config['fields'] %}
+                            {% set field_name = field['name'] %}
+                            {% if field.get('type') == 'select' %}
+                                <td>{{ row.get(field_name ~ '__display') or row.get(field_name) or '' }}</td>
+                            {% else %}
+                                <td>{{ row.get(field_name) or '' }}</td>
+                            {% endif %}
+                        {% endfor %}
+                        <td class="row-actions">
+                            <button class="small-link" type="button" data-open-modal="editReferenceModal{{ record_id }}">Изм.</button>
+                            <form action="{{ url_for('references.delete_reference', table_key=selected_key, record_id=record_id) }}" method="post" class="inline-form js-confirm" data-confirm="Удалить запись справочника?">
+                                <button class="small-link danger-link" type="submit">Удал.</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="{{ selected_config['fields']|length + 2 }}" class="empty-cell">Записи отсутствуют.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal" id="createReferenceModal" aria-hidden="true">
+            <div class="modal-backdrop" data-close-modal></div>
+            <div class="modal-card large-modal-card">
+                <div class="modal-head">
+                    <h2>Добавить запись</h2>
+                    <button class="icon-button" type="button" data-close-modal>×</button>
+                </div>
+                <form action="{{ url_for('references.add_reference', table_key=selected_key) }}" method="post" class="form-grid two-cols">
+                    {{ render_reference_fields(selected_config, options) }}
+                    <div class="form-actions right wide-field">
+                        <button class="button ghost" type="button" data-close-modal>Отмена</button>
+                        <button class="button primary" type="submit">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% for row in rows %}
+            {% set record_id = row[selected_config['pk']] %}
+            <div class="modal" id="editReferenceModal{{ record_id }}" aria-hidden="true">
+                <div class="modal-backdrop" data-close-modal></div>
+                <div class="modal-card large-modal-card">
+                    <div class="modal-head">
+                        <h2>Редактировать запись № {{ record_id }}</h2>
+                        <button class="icon-button" type="button" data-close-modal>×</button>
+                    </div>
+                    <form action="{{ url_for('references.edit_reference', table_key=selected_key, record_id=record_id) }}" method="post" class="form-grid two-cols">
+                        {{ render_reference_fields(selected_config, options, row) }}
+                        <div class="form-actions right wide-field">
+                            <button class="button ghost" type="button" data-close-modal>Отмена</button>
+                            <button class="button primary" type="submit">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-cell">Справочники не настроены.</div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% set title = 'Индивидуальная карта больного' %}
+
+{% block content %}
+<section class="report-toolbar no-print">
+    <a class="button ghost" href="{{ url_for('main.index', patient_id=patient.PATIENT_ID) }}">← Вернуться</a>
+    <button class="button primary" type="button" onclick="window.print()">Печать</button>
+</section>
+
+<section class="report-page">
+    <h1>Индивидуальная карта больного</h1>
+
+    <div class="report-grid">
+        <table class="report-info-table">
+            <tr>
+                <th>Фамилия</th>
+                <td>{{ patient.PATIENT_LN }}</td>
+            </tr>
+            <tr>
+                <th>Имя</th>
+                <td>{{ patient.PATIENT_FN }}</td>
+            </tr>
+            <tr>
+                <th>Отчество</th>
+                <td>{{ patient.PATIENT_SN or '' }}</td>
+            </tr>
+        </table>
+
+        <table class="report-info-table">
+            <tr>
+                <th>Дата рождения</th>
+                <td>{{ patient.BIRTHDATE or 'Н/Д' }}</td>
+            </tr>
+            <tr>
+                <th>СНИЛС</th>
+                <td>{{ patient.SNILS or 'Н/Д' }}</td>
+            </tr>
+        </table>
+
+        <table class="report-info-table">
+            <tr>
+                <th>Лекарственная устойчивость</th>
+                <td>{{ patient.TUB_MULTIDRUG_RESISTENCE or 'Нет' }}</td>
+            </tr>
+            <tr>
+                <th>Впервые выявлен</th>
+                <td>{{ 'Да' if patient.PATIENT_VV else 'Нет' }}</td>
+            </tr>
+            <tr>
+                <th>Дата взятия на учет</th>
+                <td>{{ patient.ACCOUNTING_DAY or '' }}</td>
+            </tr>
+            <tr>
+                <th>ГДУ</th>
+                <td>{{ patient.GDU_DESCRIPTION or 'Нет' }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="report-notes">
+        <strong>Примечания:</strong>
+        <div>{{ patient.PATIENT_NOTES or '' }}</div>
+    </div>
+
+    <div class="report-analysis-wrap">
+        <table class="report-analysis-table">
+            <colgroup>
+                <col class="col-num">
+                <col class="col-date">
+                <col class="col-lab">
+                <col class="col-mu">
+                <col class="col-office">
+                <col class="col-code">
+                <col class="col-result">
+                <col class="col-growth">
+                {% for _ in range(23) %}
+                    <col class="col-drug">
+                {% endfor %}
+            </colgroup>
+            <thead>
+            <tr>
+                <th>№</th>
+                <th>Дата</th>
+                <th>Лаб.</th>
+                <th>Учреждение</th>
+                <th>Подразд.</th>
+                <th>Исслед.</th>
+                <th>Рез.</th>
+                <th>Рост</th>
+                <th>S</th>
+                <th>H</th>
+                <th>R</th>
+                <th>E</th>
+                <th>Km</th>
+                <th>Eto</th>
+                <th>Of</th>
+                <th>Cm</th>
+                <th>Am</th>
+                <th>PAS</th>
+                <th>Cs</th>
+                <th>Z</th>
+                <th>Lfx</th>
+                <th>Mfx</th>
+                <th>Lzd</th>
+                <th>K</th>
+                <th>TCH</th>
+                <th>Na</th>
+                <th>NR</th>
+                <th>Mfx1</th>
+                <th>Bdq</th>
+                <th>Dlm</th>
+                <th>CFZ</th>
+            </tr>
+            </thead>
+        <tbody>
+        {% for test in tests %}
+            <tr>
+                <td>{{ test.TEST_NUMBER }}</td>
+                <td>{{ test.TEST_DATE }}</td>
+                <td>{{ test.LABORATORY or '' }}</td>
+                <td>{{ test.MEDICAL_ORGANIZATION or '' }}</td>
+                <td>{{ test.MEDICAL_ORGANIZATION_OFFICE or '' }}</td>
+                <td>{{ test.TEST_CODE or '' }}</td>
+                <td>{{ test.TEST_VALUE or '' }}</td>
+                <td>{{ test.GROWTH_RATE or '' }}</td>
+                <td>{{ test.ABG_S or '' }}</td>
+                <td>{{ test.ABG_H or '' }}</td>
+                <td>{{ test.ABG_R or '' }}</td>
+                <td>{{ test.ABG_E or '' }}</td>
+                <td>{{ test.ABG_KM or '' }}</td>
+                <td>{{ test.ABG_ETO or '' }}</td>
+                <td>{{ test.ABG_OFX or '' }}</td>
+                <td>{{ test.ABG_CM or '' }}</td>
+                <td>{{ test.ABG_AM or '' }}</td>
+                <td>{{ test.ABG_PAS or '' }}</td>
+                <td>{{ test.ABG_CS or '' }}</td>
+                <td>{{ test.ABG_Z or '' }}</td>
+                <td>{{ test.ABG_LFX or '' }}</td>
+                <td>{{ test.ABG_MFX or '' }}</td>
+                <td>{{ test.ABG_LZD or '' }}</td>
+                <td>{{ test.ABG_K or '' }}</td>
+                <td>{{ test.ABG_TCH or '' }}</td>
+                <td>{{ test.ABG_NA or '' }}</td>
+                <td>{{ test.ABG_NR or '' }}</td>
+                <td>{{ test.ABG_MFX1 or '' }}</td>
+                <td>{{ test.ABG_BDQ or '' }}</td>
+                <td>{{ test.ABG_DLM or '' }}</td>
+                <td>{{ test.ABG_CFZ or '' }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="31">Исследования отсутствуют.</td>
+            </tr>
+        {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
